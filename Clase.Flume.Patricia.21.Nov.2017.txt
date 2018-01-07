@@ -1,0 +1,355 @@
+######################################################################
+#####################                            #####################
+#####################           FLUME            #####################
+#####################                            #####################
+######################################################################
+
+
+
+#Clase Flume Patricia 21 Nov 2017
+
+#defino los elementos del agente flume
+
+agente.sources|sinks|channel = valor
+
+agent_name.sources.mysource.type =netcat
+
+
+a1.sources = mysource 
+a1.sinks = mysink
+a1.channels = mychannel
+
+#source type netcat
+#'netcat' comvierte en evento todo lo que escucha en un puerto
+
+
+
+
+#empieza la chicha
+
+
+#----------------------------------------------------------
+#             Ejemplo en clase de flume
+#----------------------------------------------------------
+
+#DEsde el edge
+flume-ng
+Configuration of the elements for the Flume agent
+
+#lo he grabado en mi archivo del cluster, que esta en
+/tmp/agent_example.conf)
+
+#lo active con  $ vi [->]
+
+#Configuration of the elements for the Flume agent
+#Definition of the elements
+bcabrera.sources = netcatsource
+bcabrera.sinks = logsink
+bcabrera.channels = memchannel
+
+# Source configuration
+bcabrera.sources.netcatsource.type = netcat
+bcabrera.sources.netcatsource.bind = localhost
+bcabrera.sources.netcatsource.port = 44447
+
+# Channel configuration
+bcabrera.channels.memchannel.type = memory
+bcabrera.channels.memchannel.capacity = 100
+bcabrera.channels.memchannel.transactionCapacity = 10
+
+# Sink configuration
+bcabrera.sinks.logsink.type = logger
+
+# Bind the source and sink to the channel 
+bcabrera.sources.netcatsource.channels = memchannel
+bcabrera.sinks.logsink.channel = memchannel
+
+
+#lo llamo como
+flume-ng agent -c -f -n agent_example.conf
+
+#para esciuchar se ponía 
+telnet localhost 44447
+
+#----------------------------------------------------------
+#             Observacoines del ejemplo en clase
+#----------------------------------------------------------
+
+#del source solo es obligatorio definir el type; tiene varias opciones
+
+#configuracion del canal
+
+
+#----------------------------------------------------------
+#             Ejemplo configuration file in flume
+#----------------------------------------------------------
+
+#ejemplo de instruccion flume de https://flume.apache.org/FlumeUserGuide.html
+
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = netcat
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# Describe the sink
+a1.sinks.k1.type = logger
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+
+#----------------------------------------------------------
+#             Ejercicio 2
+#----------------------------------------------------------
+
+
+#+++++++++++++++++++++   Enunciado   ++++++++++++++++++++++
+
+Ejercicio 2. Agente de FLUME que escriba en HDFS.
+Modificamos el agente del ejercicio 1 para que escriba en HDFS.
+●	¿Qué elemento hay que cambiar?
+●	Usa la página de apache para buscar el sink de tipo HDFS y mira las propiedades que son obligatorias para este tipo de sink.
+
+●	Algunas cosas a tener en cuenta:
+o	El nombre del sink es hdfs_sink.
+o	La ruta dónde vamos a escribir en HDFS es:
+hdfs://nameservice1/user/alumno/flume/ejercicio2
+
+●	Visualiza el log, ¿Por qué crees que se crean ficheros tmp?
+
+●	Haz un ls del directorio de HDFS dónde has escrito tus eventos. ¿Qué significan esos números después de FlumeData?
+
+●	Descárgate el directorio y visualiza los ficheros. ¿En qué formato están?.
+
+●	Vamos a hacer algunos campos en nuestro sink. Una vez hayas hecho los cambios lanza el agente.
+o	Cambiar el formato de los ficheros a texto plano. En este caso se añaden dos propiedades.
+o	El prefijo de los ficheros en lugar de ser FlumeData lo cambiamos a NetcatData.
+o	El directorio de HDFS vamos a cambiarlo por uno “variable”. En concreto uno de año/mes/día (miramos documentación).
+hdfs://nameservice1/user/alumno/flume/ejercicio2/%Y-%m-%d
+
+●	Para arreglar el error añade al sink la siguiente propiedad:
+hdfs.useLocalTimeStamp = true
+
+●	Visualiza los ficheros En HDFS y comprueba que cada evento lo ha incluido en una línea distinta del fichero.
+
+
+#+++++++++++++++++++++   Código ejercicio 2   ++++++++++++++++++++++
+
+bcabrera.sources = netcatsource
+bcabrera.sinks = hdfs_sink
+bcabrera.channels = memchannel
+
+# Source configuration
+bcabrera.sources.netcatsource.type = netcat
+bcabrera.sources.netcatsource.bind = localhost
+bcabrera.sources.netcatsource.port = 44447
+
+# Channel configuration
+bcabrera.channels.memchannel.type = memory
+bcabrera.channels.memchannel.capacity = 100
+bcabrera.channels.memchannel.transactionCapacity = 10
+
+# Sink configuration
+bcabrera.sinks.hdfs_sink.type = hdfs
+bcabrera.sinks.hdfs_sink.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/ejercicio2
+
+# Bind the source and sink to the channel 
+bcabrera.sources.netcatsource.channels = memchannel
+bcabrera.sinks.hdfs_sink.channel = memchannel
+
+
+#+++++++++++++++++++++   Código ejercicio 2.1   ++++++++++++++++++++++
+
+#ejercicio para hacer legibles los hdfs
+
+
+bcabrera.sources = netcatsource
+bcabrera.sinks = hdfs_sink
+bcabrera.channels = memchannel
+
+# Source configuration
+bcabrera.sources.netcatsource.type = netcat
+bcabrera.sources.netcatsource.bind = localhost
+bcabrera.sources.netcatsource.port = 44447
+
+# Channel configuration
+bcabrera.channels.memchannel.type = memory
+bcabrera.channels.memchannel.capacity = 100
+bcabrera.channels.memchannel.transactionCapacity = 10
+
+# Sink configuration
+bcabrera.sinks.hdfs_sink.type = hdfs
+bcabrera.sinks.hdfs_sink.hdfs.writeFormat=Text
+bcabrera.sinks.hdfs_sink.hdfs.useLocalTimeStamp=true
+bcabrera.sinks.hdfs_sink.hdfs.filePrefix=NetcatData
+bcabrera.sinks.hdfs_sink.hdfs.fileType=SequenceFile
+bcabrera.sinks.hdfs_sink.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/ejercicio2/%Y-%m-%d
+
+# Bind the source and sink to the channel 
+bcabrera.sources.netcatsource.channels = memchannel
+bcabrera.sinks.hdfs_sink.channel = memchannel
+
+
+#+++++++++++++++++++++   Código ejercicio 3   ++++++++++++++++++++++
+
+#
+
+bcabrera.sources = netcatsource
+bcabrera.sinks = hdfs_sink
+bcabrera.channels = memchannel
+
+# Source configuration
+bcabrera.sources.netcatsource.type = spooldir
+bcabrera.sources.netcatsource.spoolDir = /home/bcabrera/googletrends
+bcabrera.sources.netcatsource.bind = localhost
+bcabrera.sources.netcatsource.port = 44447
+
+# Channel configuration
+bcabrera.channels.memchannel.type = memory
+bcabrera.channels.memchannel.capacity = 1000
+bcabrera.channels.memchannel.transactionCapacity = 1000
+
+# Sink configuration
+bcabrera.sinks.hdfs_sink.type = spooldir
+bcabrera.sinks.hdfs_sink.hdfs.path = $HOME/googletrends
+bcabrera.sinks.hdfs_sink.hdfs.
+
+bcabrera.sinks.hdfs_sink.type = hdfs
+bcabrera.sinks.hdfs_sink.hdfs.writeFormat=Text
+bcabrera.sinks.hdfs_sink.hdfs.useLocalTimeStamp=true
+bcabrera.sinks.hdfs_sink.hdfs.filePrefix=NetcatData
+bcabrera.sinks.hdfs_sink.hdfs.fileType=SequenceFile
+bcabrera.sinks.hdfs_sink.hdfs.path = hdfs://nameservice1/user/bcabrera/flumedata/googletrends/fecha=%Y-%m-%d
+
+
+# Bind the source and sink to the channel 
+bcabrera.sources.netcatsource.channels = memchannel
+bcabrera.sinks.hdfs_sink.channel = memchannel
+
+#+++++++++++++++++++++   Create HIVE   ++++++++++++++++++++++
+
+CREATE EXTERNAL TABLE bcabrera.googleTrends(
+country string,
+searches_iphone int,
+searches_samsung int)
+PARTITIONED BY (fecha date)
+ROW format delimited fields terminated by ','
+LOCATION 'hdfs://nameservice1/user/bcabrera/flumedata/googletrends';
+
+
+#para alimentarlo me voy al edge
+flume-ng agent -c . -f flume_hdfs.conf -n bcabrera
+
+#Se abre otro shell, y se activa un puerto para hablar por el
+$telnet 127.0.0.1 44447
+
+
+#aplicar el vi
+#necesito agregar tutorial vi
+
+
+
+
+#----------------------------------------------------------
+#             Práctica de Boris 28 Nov 2017
+#----------------------------------------------------------
+
+#llamo a mi agente 'ag_fl'
+# mi agente se llamó 'ag_fl'
+
+#este es el código usado
+# example.conf: A single-node Flume configuration
+
+# Name the components on this agent
+ag_fl.sources = sou
+ag_fl.sinks = sin
+ag_fl.channels = cha
+
+# Describe/configure the source
+ag_fl.sources.sou.type = netcat
+ag_fl.sources.sou.bind = localhost
+ag_fl.sources.sou.port = 44444
+
+# Describe the sink
+ag_fl.sinks.sin.type = logger
+
+# Use a channel which buffers events in memory
+ag_fl.channels.cha.type = memory
+ag_fl.channels.cha.capacity = 1000
+ag_fl.channels.cha.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+ag_fl.sources.sou.channels = cha
+ag_fl.sinks.sin.channel=cha
+
+
+#----------------------  Ejercicio 2 ----------------------------
+
+
+#Ahora, lo modifico 
+# la ruta de grabado será hdfs://nameservice1/user/bcabrera/flume/ejercicio22
+
+
+#----------------------  Ejercicio 3, solucion PAtricia ----------------------------
+
+
+#flume-ng agent -c . -f netcat_ejercicio21.conf -n palcalde
+#Definition of the elements for the Flume agent
+palcalde.sources = dirsource
+palcalde.sinks = hdfs_sink
+palcalde.channels = memchannel
+
+# Source configuration
+palcalde.sources.dirsource.type = spooldir
+palcalde.sources.dirsource.spoolDir = /home/bcabrera/googletrends
+
+# Channel configuration
+palcalde.channels.memchannel.type = memory
+palcalde.channels.memchannel.capacity = 500
+palcalde.channels.memchannel.transactionCapacity = 100
+
+# Sink configuration
+palcalde.sinks.hdfs_sink.type = hdfs
+palcalde.sinks.hdfs_sink.hdfs.path = hdfs://nameservice1/user/bcabrera/flumedata/googletrends/fecha=%Y-%m-%d
+palcalde.sinks.hdfs_sink.hdfs.filePrefix = gt
+palcalde.sinks.hdfs_sink.hdfs.writeFormat = Text
+palcalde.sinks.hdfs_sink.hdfs.useLocalTimeStamp = true
+palcalde.sinks.hdfs_sink.hdfs.fileType = DataStream
+palcalde.sinks.hdfs_sink.hdfs.rollCount = 100
+palcalde.sinks.hdfs_sink.hdfs.rollSize = 0
+
+# Bind the source and sink to the channel 
+palcalde.sources.dirsource.channels = memchannel
+palcalde.sinks.hdfs_sink.channel = memchannel
+~                                                                               
+~                                     
+
+#para matar aplicaciones elegantemente se usa
+$yarn applice -kill app_id
+
+#hacemos una tabla hive
+CREATE EXTERNAL TABLE bcabrera.googleTrends(
+country string,
+searches_iphone int,
+searches_samsung int)
+PARTITIONED BY (fecha date)
+ROW format delimited fields terminated by ','
+LOCATION 'hdfs://nameservice1/user/bcabrera/flumedata/googletrends';
+
+#comando de hive para actualizar una tabla
+$msck repair table bcabrera.googletrends;
+
+
+

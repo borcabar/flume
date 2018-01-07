@@ -1,0 +1,333 @@
+############################################################################
+#######################     Flume avanzado      ############################
+############################################################################
+
+
+#claves de twitter
+
+Consumer Key (API Key) fy9hEFZmjEsCCfN2GjkyfhIg9
+Consumer Secret (API Secret) 5PSWqM8Jzby6EPqS7CpI8PoCrqvaRZR6b1XepoScKATqVGLEsd 
+
+Access Token 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
+Access Token Secret I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0 
+
+
+
+
+pepeto.sources = Twitter
+pepeto.channels = MemChannel
+pepeto.sinks = hdfs_sink
+ 
+pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
+pepeto.sources.Twitter.channels = MemChannel
+pepeto.sources.Twitter.consumerKey = fy9hEFZmjEsCCfN2GjkyfhIg9
+pepeto.sources.Twitter.consumerSecret = 5PSWqM8Jzby6EPqS7CpI8PoCrqvaRZR6b1XepoScKATqVGLEsd
+pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
+pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
+ 
+pepeto.sinks.hdfs_sink.channel = MemChannel
+pepeto.sinks.hdfs_sink.type = hdfs
+pepeto.sinks.hdfs_sink.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/tweets/date=%Y-%m-%d
+pepeto.sinks.hdfs_sink.hdfs.fileType = DataStream
+pepeto.sinks.hdfs_sink.hdfs.writeFormat = Text
+pepeto.sinks.hdfs_sink.hdfs.rollSize = 0
+pepeto.sinks.hdfs_sink.hdfs.rollCount = 500
+pepeto.sinks.hdfs_sink.hdfs.rollInterval = 60
+ 
+pepeto.channels.MemChannel.type = memory
+pepeto.channels.MemChannel.capacity = 10000
+pepeto.channels.MemChannel.transactionCapacity = 1000
+
+pepeto.sources.netcatsource.channels=memchannel
+pepeto.sinks.hdfs_sink.channel=memchannel
+
+
+
+TwitterAgent.sources = Twitter
+TwitterAgent.channels = MemChannel
+TwitterAgent.sinks = HDFS
+
+TwitterAgent.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
+TwitterAgent.sources.Twitter.channels = MemChannel
+TwitterAgent.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
+TwitterAgent.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
+TwitterAgent.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
+TwitterAgent.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+TwitterAgent.sources.Twitter.keywords = cryptocurrency, blockchain
+
+TwitterAgent.sinks.HDFS.channel = MemChannel
+TwitterAgent.sinks.HDFS.type = hdfs
+TwitterAgent.sinks.HDFS.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/tweets/date=%Y-%m-%d
+TwitterAgent.sinks.HDFS.hdfs.fileType = DataStream
+TwitterAgent.sinks.HDFS.hdfs.writeFormat = Text
+TwitterAgent.sinks.HDFS.hdfs.batchSize = 1000
+TwitterAgent.sinks.HDFS.hdfs.rollSize = 0
+TwitterAgent.sinks.HDFS.hdfs.rollCount = 500
+TwitterAgent.sinks.HDFS.hdfs.rollInterval = 60
+
+TwitterAgent.channels.MemChannel.type = memory
+TwitterAgent.channels.MemChannel.capacity = 10000
+TwitterAgent.channels.MemChannel.transactionCapacity = 1000
+
+
+
+flume-ng agent -c . -f TA6.conf -n TwitterAgent
+
+
+#Ahora con el hive
+
+CREATE EXTERNAL TABLE bcabrera.tweets (
+id BIGINT,
+created_at STRING,
+source STRING,
+favorited BOOLEAN,
+retweeted_status STRUCT<
+text:STRING,
+user:STRUCT<screen_name:STRING,name:STRING>,
+retweet_count:INT>,
+entities STRUCT<
+urls:ARRAY<STRUCT<expanded_url:STRING>>,
+user_mentions:ARRAY<STRUCT<screen_name:STRING,name:STRING>>,
+hashtags:ARRAY<STRUCT<text:STRING>>>,
+text STRING,
+user STRUCT<
+location:STRING,
+screen_name:STRING,
+name:STRING,
+friends_count:INT,
+followers_count:INT,
+statuses_count:INT,
+verified:BOOLEAN,
+utc_offset:INT,
+time_zone:STRING>,
+in_reply_to_screen_name STRING
+)
+ROW FORMAT SERDE 'org.openx.data.jsonserde.JsonSerDe'
+LOCATION 'hdfs://nameservice1/user/bcabrera/flume/tweets/date=2017-12-13';
+
+/home/bcabrera/hive_p1/ejercicio6/json-serde-1.3.8-jar-with-dependencies.jar
+
+
+#Desde el Hive
+
+add jar /home/bcabrera/hive_p1/ejercicio6/json-serde-1.3.8-jar-with-dependencies.jar;
+
+#conté las cantidad de tweets
+select count(*) from tweets;
+
+#tweets relacionados con venezuela
+select count(*) from tweets where user.location like '%Venezuela%';
+
+#conté la cantidad de veces que fueron retweetiados los tweet en mi tabla
+select sum(retweeted_status.retweet_count) from tweets;
+
+#contar la cant. de tweets por location y ordenarla de manera descendente
+select count(*) as Count, user.location from tweets group by user.location sort by Count desc;
+
+#Encontrar las personas con más seguidores
+select user.followers_count, user.name, user.location from tweets where user.followers_count>10000 order by followers_count desc;
+
+
+
+#----------------------    Ejemplo de lo archivado en el HDFS como tweet     --------------------------
+
+
+941014135113953286	Wed Dec 13 18:37:07 +0000 2017	<a href="http://twitter.com/download/android" rel="nofollow">Twitter for Android</a>	false	
+{"text":"South Korean 'decapitation unit' will be armed with suicide drones to take out Kim Jong Un https://t.co/1avcMoOD6N https://t.co/KjEwn15Mah","user":{"screen_name":"MilDefInsider","name":"Mil/Def Insider"},"retweet_count":13}	
+
+{"urls":[{"expanded_url":"http://read.bi/2jdMOLA"}],"user_mentions":[{"screen_name":"MilDefInsider","name":"Mil/Def Insider"}],"hashtags":[]}	RT @MilDefInsider: South Korean 'decapitation unit' will be armed with suicide drones to take out Kim Jong Un https://t.co/1avcMoOD6N https…	{"location":null,"screen_name":"RouxMartina","name":"Martina Roux","friends_count":1050,"followers_count":98,"statuses_count":5872,"verified":false,"utc_offset":null,"time_zone":null}	NULL
+
+
+
+
+941014142948921344	Wed Dec 13 18:37:09 +0000 2017	<a href="http://twitter.com" rel="nofollow">Twitter Web Client</a>	false	NULL	{"urls":[{"expanded_url":"https://twitter.com/i/web/status/941014142948921344"}],"user_mentions":[],"hashtags":[{"text":"ArabaEncounter"},{"text":"robótica"},{"text":"drones"}]}	#ArabaEncounter arranca con más de 25 actividades formativas, 23 competiciones, y talleres de #robótica, #drones y… https://t.co/9Zo4Z0z3bu	{"location":"Bilbao Exhibition Centre","screen_name":"euskalencounter","name":"Euskal Encounter","friends_count":68,"followers_count":6810,"statuses_count":9288,"verified":false,"utc_offset":3600,"time_zone":"Madrid"}	NULL
+941014150133768197	Wed Dec 13 18:37:11 +0000 2017	<a href="http://twitter.com/download/iphone" rel="nofollow">Twitter for iPhone</a>	false	NULL	{"urls":[],"user_mentions":[{"screen_name":"paulrogers002","name":"Paul Rogers"}],"hashtags":[]}	@paulrogers002 Think we’re supposed to forget that it’s been going on far longer than we’ve had access to drones for.	{"location":"Wastelands of Cyberia","screen_name":"AngrybriTony","name":"Lαιя∂ Ƈσcкωσмвℓє","friends_count":4403,"followers_count":3477,"statuses_count":165128,"verified":false,"utc_offset":null,"time_zone":null}	paulrogers002
+941014183524667392	Wed Dec 13 18:37:19 +0000 2017	<a href="http://twitter.com/#!/download/ipad" rel="nofollow">Twitter for iPad</a>	false	{"text":"Australie : des drones surveillent les plages à la recherche de requins https://t.co/IdtO4n4FWV #Planète https://t.co/hg0Xb8UYG9","user":{"screen_name":"Limportant_fr","name":"L'important"},"retweet_count":3}	{"urls":[{"expanded_url":"https://limportant.fr/infos-planete/56/403517"}],"user_mentions":[{"screen_name":"Limportant_fr","name":"L'important"}],"hashtags":[{"text":"Planète"}]}	RT @Limportant_fr: Australie : des drones surveillent les plages à la recherche de requins https://t.co/IdtO4n4FWV #Planète https://t.co/hg…	{"location":"Leuven Belgium","screen_name":"DominiqueVanpee","name":"Dominique Vanpée","friends_count":2582,"followers_count":1820,"statuses_count":398465,"verified":false,"utc_offset":null,"time_zone":null}	NULL
+941014184174784520	Wed Dec 13 18:37:19 +0000 2017	<a href="http://twitter.com" rel="nofollow">Twitter Web Client</a>	false	NULL	{"urls":[{"expanded_url":"https://twitter.com/conaf_minagri/status/940975406395613186"}],"user_mentions":[],"hashtags":[{"text":"lovethis"}]}	#lovethis 🌲😍 https://t.co/yonVS6CHzm	{"location":"Santiago; Chile","screen_name":"wilmaedelweiss","name":"Wilma Edelweiss","friends_count":338,"followers_count":132,"statuses_count":174,"verified":false,"utc_offset":-10800,"time_zone":"Santiago"}	NULL
+Time taken: 0.228 seconds, Fetched: 5 row(s)
+
+
+
+
+
+
+##################################################################################################
+###################   Ejercicio Flume Avanzado, parte 3, ejercicio 1       #######################
+##################################################################################################
+
+pepeto.sources = Twitter
+pepeto.channels = MemChannel
+pepeto.sinks = HDFS
+
+pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
+pepeto.sources.Twitter.channels = MemChannel
+pepeto.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
+pepeto.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
+pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
+pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
+pepeto.sources.Twitter.interceptors = myinter
+pepeto.sources.Twitter.interceptors.myinter.type = host
+
+pepeto.sinks.HDFS.channel = MemChannel
+pepeto.sinks.HDFS.type = hdfs
+pepeto.sinks.HDFS.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/tweets/date=%Y-%m-%d/%{host}
+pepeto.sinks.HDFS.hdfs.fileType = DataStream
+pepeto.sinks.HDFS.hdfs.writeFormat = Text
+pepeto.sinks.HDFS.hdfs.batchSize = 1000
+pepeto.sinks.HDFS.hdfs.rollSize = 0
+pepeto.sinks.HDFS.hdfs.rollCount = 500
+pepeto.sinks.HDFS.hdfs.rollInterval = 60
+
+pepeto.channels.MemChannel.type = memory
+pepeto.channels.MemChannel.capacity = 10000
+pepeto.channels.MemChannel.transactionCapacity = 1000
+
+
+#lo llamo como
+flume-ng agent -c . -f inter.conf -n pepeto
+
+
+
+##################################################################################################
+###################   Ejercicio Flume Avanzado, parte 3, ejercicio 2       #######################
+##################################################################################################
+
+
+pepeto.sources = Twitter
+pepeto.channels = MemChannel
+pepeto.sinks = HDFS
+
+pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
+pepeto.sources.Twitter.channels = MemChannel
+pepeto.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
+pepeto.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
+pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
+pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
+
+pepeto.sources.Twitter.interceptors = myinter
+pepeto.sources.Twitter.interceptors.myinter.type=regex_extractor
+pepeto.sources.Twitter.interceptors.myinter.regex = \"location\":\"(\\w+)
+pepeto.sources.Twitter.interceptors.myinter.serializers = seri
+pepeto.sources.Twitter.interceptors.myinter.serializers.seri.name = location
+
+
+
+pepeto.sinks.HDFS.channel = MemChannel
+pepeto.sinks.HDFS.type = hdfs
+pepeto.sinks.HDFS.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/tweets/date=%Y-%m-%d/%{location}
+pepeto.sinks.HDFS.hdfs.fileType = DataStream
+pepeto.sinks.HDFS.hdfs.writeFormat = Text
+pepeto.sinks.HDFS.hdfs.batchSize = 1000
+pepeto.sinks.HDFS.hdfs.rollSize = 0
+pepeto.sinks.HDFS.hdfs.rollCount = 500
+pepeto.sinks.HDFS.hdfs.rollInterval = 60
+
+pepeto.channels.MemChannel.type = memory
+pepeto.channels.MemChannel.capacity = 10000
+pepeto.channels.MemChannel.transactionCapacity = 1000
+
+
+#lo llamo como
+flume-ng agent -c . -f reg.conf -n pepeto
+
+
+#ejemplo de twitterazo relacionado
+{"in_reply_to_status_id_str":null,"in_reply_to_status_id":null,"created_at":"Mon Dec 18 18:32:07 +0000 2017","in_reply_to_user_id_str":null,"source":"<a href=\"https://mobile.twitter.com\" rel=\"nofollow\">Twitter Lite<\/a>","retweet_count":0,"retweeted":false,"geo":null,"filter_level":"low","in_reply_to_screen_name":null,"is_quote_status":false,"id_str":"942824816108638209","in_reply_to_user_id":null,"favorite_count":0,"id":942824816108638209,"text":"Got to get started on that cryptocurrency wave of the future\n\nhttps://t.co/9SioGVar2z","place":null,"lang":"en","quote_count":0,"favorited":false,"possibly_sensitive":false,"coordinates":null,"truncated":false,"timestamp_ms":"1513621927655","reply_count":0,"entities":{"urls":[{"display_url":"sphere.social/?ref_code=5309\u2026","indices":[62,85],"expanded_url":"https://sphere.social/?ref_code=5309-267ecc3e","url":"https://t.co/9SioGVar2z"}],"hashtags":[],"user_mentions":[],"symbols":[]},"contributors":null,"user":{"utc_offset":null,"friends_count":11,"profile_image_url_https":"https://pbs.twimg.com/profile_images/506142364029566976/l6eOc_Oc_normal.jpeg","listed_count":0,"profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png","default_profile_image":false,"favourites_count":0,"description":"I smoke weed","created_at":"Sun Aug 31 17:36:49 +0000 2014","is_translator":false,"profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png","protected":false,"screen_name":"dallas_duke","id_str":"2782696867","profile_link_color":"1DA1F2","translator_type":"none","id":2782696867,"geo_enabled":false,"profile_background_color":"C0DEED","lang":"en","profile_sidebar_border_color":"C0DEED","profile_text_color":"333333","verified":false,"profile_image_url":"http://pbs.twimg.com/profile_images/506142364029566976/l6eOc_Oc_normal.jpeg","time_zone":null,"url":null,"contributors_enabled":false,"profile_background_tile":false,"profile_banner_url":"https://pbs.twimg.com/profile_banners/2782696867/1409508717","statuses_count":5,"follow_request_sent":null,"followers_count":1,"profile_use_background_image":true,"default_profile":true,"following":null,"name":"Dallas Duke","location":"what do u care ","profile_sidebar_fill_color":"DDEEF6","notifications":null}}
+
+
+
+##################################################################################################
+###################   Ejercicio Flume Avanzado, parte 3, ejercicio 3       #######################
+##################################################################################################
+
+
+##################   Definition of elements    ###################
+
+pepeto.sources = Twitter
+pepeto.channels = MemChannel MemChannel2
+pepeto.sinks = HDFS logsink
+
+
+################    Twitter Source Configuration    ###############
+
+pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
+pepeto.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
+pepeto.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
+pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
+pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
+
+################    Twitter Selector Configuration     ############3
+
+pepeto.sources.Twitter.selector.type = multiplexing
+pepeto.sources.Twitter.selector.header = location
+pepeto.sources.Twitter.selector.mapping.Paris = MemChannel
+pepeto.sources.Twitter.selector.mapping.London = MemChannel2
+
+
+################  Interceptor configuration     #################
+
+pepeto.sources.Twitter.interceptors = myinter
+pepeto.sources.Twitter.interceptors.myinter.type=regex_extractor
+pepeto.sources.Twitter.interceptors.myinter.regex = \"location\":\"(\\w+)
+pepeto.sources.Twitter.interceptors.myinter.serializers = seri
+pepeto.sources.Twitter.interceptors.myinter.serializers.seri.name = location
+
+
+##################   Memory configuration    ###################
+
+pepeto.channels.MemChannel.type = memory
+pepeto.channels.MemChannel2.type = file
+pepeto.channels.MemChannel.capacity = 10000
+pepeto.channels.MemChannel.transactionCapacity = 1000
+
+
+################    HDFS SINK CONFIGURATION    ###############
+
+pepeto.sinks.HDFS.type = hdfs
+
+############ que coño es el filePrefix??????????
+pepeto.sinks.HDFS.filePrefix = twitter
+pepeto.sinks.HDFS.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/tweets/date=%Y-%m-%d/%{location}
+pepeto.sinks.HDFS.hdfs.fileType = DataStream
+pepeto.sinks.HDFS.hdfs.writeFormat = Text
+pepeto.sinks.HDFS.hdfs.batchSize = 1000
+pepeto.sinks.HDFS.hdfs.rollSize = 0
+pepeto.sinks.HDFS.hdfs.rollCount = 500
+pepeto.sinks.HDFS.hdfs.rollInterval = 60
+pepeto.sinks.HDFS.hdfs.useLocalTimeStamp = true
+
+pepeto.sinks.logsink.type=logger
+
+
+################     Bind the elements    #############
+
+pepeto.sources.Twitter.channels = MemChannel MemChannel2
+pepeto.sinks.HDFS.channel = MemChannel2
+pepeto.sinks.logsink.channel = MemChannel
+
+
+
+#lo llamo como
+flume-ng agent -c . -f multi.conf -n pepeto
+
+##########################################################
+##################     Resultado     #####################
+
+#archivo 
+hdfs://nameservice1/user/bcabrera/flume/tweets/date=2017-12-19/London/FlumeData.1513694619195
+
+
+{"in_reply_to_status_id_str":null,"in_reply_to_status_id":null,"created_at":"Tue Dec 19 14:43:37 +0000 2017","in_reply_to_user_id_str":null,"source":"<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client<\/a>","retweeted_status":{"extended_tweet":{"extended_entities":{"media":[{"display_url":"pic.twitter.com/SBQoXr5Lfr","indices":[205,228],"sizes":{"small":{"w":680,"h":383,"resize":"fit"},"large":{"w":1280,"h":720,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"medium":{"w":1200,"h":675,"resize":"fit"}},"id_str":"943125438611763201","expanded_url":"https://twitter.com/Borderless_i/status/943125753725620224/photo/1","media_url_https":"https://pbs.twimg.com/media/DRanlusWsAEZny9.jpg","id":943125438611763201,"type":"photo","media_url":"http://pbs.twimg.com/media/DRanlusWsAEZny9.jpg","url":"https://t.co/SBQoXr5Lfr"}]},"entities":{"urls":[{"display_url":"adage.com/article/digita\u2026","indices":[153,176],"expanded_url":"http://adage.com/article/digitalnext/blockchain-save-agency-business/311614/","url":"https://t.co/xlQzYIHhKR"}],"hashtags":[{"indices":[188,195],"text":"adtech"},{"indices":[196,204],"text":"martech"}],"media":[{"display_url":"pic.twitter.com/SBQoXr5Lfr","indices":[205,228],"sizes":{"small":{"w":680,"h":383,"resize":"fit"},"large":{"w":1280,"h":720,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"medium":{"w":1200,"h":675,"resize":"fit"}},"id_str":"943125438611763201","expanded_url":"https://twitter.com/Borderless_i/status/943125753725620224/photo/1","media_url_https":"https://pbs.twimg.com/media/DRanlusWsAEZny9.jpg","id":943125438611763201,"type":"photo","media_url":"http://pbs.twimg.com/media/DRanlusWsAEZny9.jpg","url":"https://t.co/SBQoXr5Lfr"}],"user_mentions":[{"indices":[181,187],"screen_name":"adage","id_str":"12480582","name":"Ad Age","id":12480582}],"symbols":[]},"full_text":"\"Blockchain isn't about technology at all. Rather, it's about new business models that fundamentally change how business will be done.\" - Judy Shapiro \n\nhttps://t.co/xlQzYIHhKR via @adage #adtech #martech https://t.co/SBQoXr5Lfr","display_text_range":[0,204]},"in_reply_to_status_id_str":null,"in_reply_to_status_id":null,"created_at":"Tue Dec 19 14:27:56 +0000 2017","in_reply_to_user_id_str":null,"source":"<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client<\/a>","retweet_count":4,"retweeted":false,"geo":null,"filter_level":"low","in_reply_to_screen_name":null,"is_quote_status":false,"id_str":"943125753725620224","in_reply_to_user_id":null,"favorite_count":6,"id":943125753725620224,"text":"\"Blockchain isn't about technology at all. Rather, it's about new business models that fundamentally change how bus\u2026 https://t.co/ZAjHXZmiML","place":null,"lang":"en","quote_count":0,"favorited":false,"possibly_sensitive":false,"coordinates":null,"truncated":true,"reply_count":0,"entities":{"urls":[{"display_url":"twitter.com/i/web/status/9\u2026","indices":[117,140],"expanded_url":"https://twitter.com/i/web/status/943125753725620224","url":"https://t.co/ZAjHXZmiML"}],"hashtags":[],"user_mentions":[],"symbols":[]},"display_text_range":[0,140],"contributors":null,"user":{"utc_offset":0,"friends_count":962,"profile_image_url_https":"https://pbs.twimg.com/profile_images/619533860016140290/6lKA5Ej5_normal.jpg","listed_count":24,"profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png","default_profile_image":false,"favourites_count":334,"description":"Curious mind interested in real-life applications of IT, risk management & data privacy. Other interests: #cybersecurity #IoT #smartcities #GDPR, #adtech","created_at":"Tue Mar 19 12:52:21 +0000 2013","is_translator":false,"profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png","protected":false,"screen_name":"Borderless_i","id_str":"1280327874","profile_link_color":"3B94D9","translator_type":"none","id":1280327874,"geo_enabled":false,"profile_background_color":"000000","lang":"en","profile_sidebar_border_color":"000000","profile_text_color":"000000","verified":false,"profile_image_url":"http://pbs.twimg.com/profile_images/619533860016140290/6lKA5Ej5_normal.jpg","time_zone":"Europe/London","url":null,"contributors_enabled":false,"profile_background_tile":false,"profile_banner_url":"https://pbs.twimg.com/profile_banners/1280327874/1493829229","statuses_count":523,"follow_request_sent":null,"followers_count":402,"profile_use_background_image":false,"default_profile":false,"following":null,"name":"Omo Osagiede","location":"London, England","profile_sidebar_fill_color":"000000","notifications":null}},"retweet_count":0,"retweeted":false,"geo":null,"filter_level":"low","in_reply_to_screen_name":null,"is_quote_status":false,"id_str":"943129697923354624","in_reply_to_user_id":null,"favorite_count":0,"id":943129697923354624,"text":"RT @Borderless_i: \"Blockchain isn't about technology at all. Rather, it's about new business models that fundamentally change how bus\u2026 ","place":null,"lang":"en","quote_count":0,"favorited":false,"coordinates":null,"truncated":false,"timestamp_ms":"1513694617144","reply_count":0,"entities":{"urls":[],"hashtags":[],"user_mentions":[{"indices":[3,16],"screen_name":"Borderless_i","id_str":"1280327874","name":"Omo Osagiede","id":1280327874}],"symbols":[]},"contributors":null,"user":{"utc_offset":-18000,"friends_count":63,"profile_image_url_https":"https://pbs.twimg.com/profile_images/877973204769308672/Chkoc0bl_normal.jpg","listed_count":2,"profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png","default_profile_image":false,"favourites_count":568,"description":"Discover chatbots that can help you! #chatbot","created_at":"Thu Jun 22 18:19:28 +0000 2017","is_translator":false,"profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png","protected":false,"screen_name":"chatbotjoy","id_str":"877954205318860800","profile_link_color":"8CC63E","translator_type":"none","id":877954205318860800,"geo_enabled":false,"profile_background_color":"000000","lang":"en","profile_sidebar_border_color":"000000","profile_text_color":"000000","verified":false,"profile_image_url":"http://pbs.twimg.com/profile_images/877973204769308672/Chkoc0bl_normal.jpg","time_zone":"Eastern Time (US & Canada)","url":"http://chatbotjoy.com","contributors_enabled":false,"profile_background_tile":false,"statuses_count":663,"follow_request_sent":null,"followers_count":22,"profile_use_background_image":false,"default_profile":false,"following":null,"name":"@chatbotjoy","location":"Manhattan, NY","profile_sidebar_fill_color":"000000","notifications":null}}
+{"in_reply_to_status_id_str":null,"in_reply_to_status_id":null,"created_at":"Tue Dec 19 14:44:27 +0000 2017","in_reply_to_user_id_str":null,"source":"<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client<\/a>","retweeted_status":{"extended_tweet":{"entities":{"urls":[{"display_url":"coindesk.com/transformed-ro\u2026","indices":[172,195],"expanded_url":"https://www.coindesk.com/transformed-role-government-blockchain-era/","url":"https://t.co/pDl1Pd4POm"}],"hashtags":[],"user_mentions":[],"symbols":[]},"full_text":"Dubai's adoption of blockchain technology at a city-wide scale is a testament to its commitment to positively transform government from service provider to service enabler https://t.co/pDl1Pd4POm","display_text_range":[0,195]},"in_reply_to_status_id_str":null,"in_reply_to_status_id":null,"created_at":"Mon Dec 18 14:48:28 +0000 2017","in_reply_to_user_id_str":null,"source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone<\/a>","retweet_count":58,"retweeted":false,"geo":null,"filter_level":"low","in_reply_to_screen_name":null,"is_quote_status":false,"id_str":"942768533930471425","in_reply_to_user_id":null,"favorite_count":107,"id":942768533930471425,"text":"Dubai's adoption of blockchain technology at a city-wide scale is a testament to its commitment to positively trans\u2026 https://t.co/4yKWjCpiEF","place":null,"lang":"en","quote_count":7,"favorited":false,"possibly_sensitive":false,"coordinates":null,"truncated":true,"reply_count":3,"entities":{"urls":[{"display_url":"twitter.com/i/web/status/9\u2026","indices":[117,140],"expanded_url":"https://twitter.com/i/web/status/942768533930471425","url":"https://t.co/4yKWjCpiEF"}],"hashtags":[],"user_mentions":[],"symbols":[]},"contributors":null,"user":{"utc_offset":14400,"friends_count":1050,"profile_image_url_https":"https://pbs.twimg.com/profile_images/378800000207509943/b72f4b8ae77972d145850f85fc071bda_normal.jpeg","listed_count":429,"profile_background_image_url":"http://pbs.twimg.com/profile_background_images/746954386/262b0a7dfa60ef9b9cad915d2c3cc691.png","default_profile_image":false,"favourites_count":2093,"description":"Dr. Aisha Bint Butti Bin Bishr. The most impactful technologies and innovations are those that make people happier #SmartDubai","created_at":"Mon Aug 20 08:26:30 +0000 2007","is_translator":false,"profile_background_image_url_https":"https://pbs.twimg.com/profile_background_images/746954386/262b0a7dfa60ef9b9cad915d2c3cc691.png","protected":false,"screen_name":"Aisha_BinBishr","id_str":"8300812","profile_link_color":"807A7B","translator_type":"none","id":8300812,"geo_enabled":false,"profile_background_color":"351F3E","lang":"en","profile_sidebar_border_color":"E8CE9E","profile_text_color":"9FAC9A","verified":true,"profile_image_url":"http://pbs.twimg.com/profile_images/378800000207509943/b72f4b8ae77972d145850f85fc071bda_normal.jpeg","time_zone":"Abu Dhabi","url":"http://www.smartdubai.ae","contributors_enabled":false,"profile_background_tile":true,"profile_banner_url":"https://pbs.twimg.com/profile_banners/8300812/1455059513","statuses_count":58937,"follow_request_sent":null,"followers_count":113567,"profile_use_background_image":true,"default_profile":false,"following":null,"name":"عائشة بنت بطي بن بشر","location":"دولة الإمارات العربية المتحدة","profile_sidebar_fill_color":"CAC3A1","notifications":null}},"retweet_count":0,"retweeted":false,"geo":null,"filter_level":"low","in_reply_to_screen_name":null,"is_quote_status":false,"id_str":"943129908250890246","in_reply_to_user_id":null,"favorite_count":0,"id":943129908250890246,"text":"RT @Aisha_BinBishr: Dubai's adoption of blockchain technology at a city-wide scale is a testament to its commitment to positively trans\u2026 ","place":null,"lang":"en","quote_count":0,"favorited":false,"coordinates":null,"truncated":false,"timestamp_ms":"1513694667290","reply_count":0,"entities":{"urls":[],"hashtags":[],"user_mentions":[{"indices":[3,18],"screen_name":"Aisha_BinBishr","id_str":"8300812","name":"عائشة بنت بطي بن بشر","id":8300812}],"symbols":[]},"contributors":null,"user":{"utc_offset":-28800,"friends_count":119,"profile_image_url_https":"https://pbs.twimg.com/profile_images/931997704242319360/LdwVbW-A_normal.jpg","listed_count":2,"profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png","default_profile_image":false,"favourites_count":261,"description":"#cryptocurrency #bitcoin #blockchain #криптовалюта# #блокчейн #news #майнинг #mining#","created_at":"Tue Nov 24 15:07:02 +0000 2015","is_translator":false,"profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png","protected":false,"screen_name":"cryptonewsretw","id_str":"4265375075","profile_link_color":"1DA1F2","translator_type":"none","id":4265375075,"geo_enabled":false,"profile_background_color":"C0DEED","lang":"en","profile_sidebar_border_color":"C0DEED","profile_text_color":"333333","verified":false,"profile_image_url":"http://pbs.twimg.com/profile_images/931997704242319360/LdwVbW-A_normal.jpg","time_zone":"Pacific Time (US & Canada)","url":null,"contributors_enabled":false,"profile_background_tile":false,"profile_banner_url":"https://pbs.twimg.com/profile_banners/4265375075/1511040518","statuses_count":8188,"follow_request_sent":null,"followers_count":72,"profile_use_background_image":true,"default_profile":true,"following":null,"name":"Cryptocurrency news retweet","location":"London, England","profile_sidebar_fill_color":"DDEEF6","notifications":null}}
+
+
+#####################################
+####    Ejercicio de Hive    ########
+#####################################
+
+select explode(ngrams(sentences(lower(text)),2,4))
+from bcabrera.tweets;
