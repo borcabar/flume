@@ -162,10 +162,10 @@ pepeto.sinks = HDFS
 
 pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
 pepeto.sources.Twitter.channels = MemChannel
-pepeto.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
-pepeto.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
-pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
-pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.consumerKey = xxx
+pepeto.sources.Twitter.consumerSecret = xxx
+pepeto.sources.Twitter.accessToken = xxx
+pepeto.sources.Twitter.accessTokenSecret = xxx
 pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
 pepeto.sources.Twitter.interceptors = myinter
 pepeto.sources.Twitter.interceptors.myinter.type = host
@@ -201,10 +201,10 @@ pepeto.sinks = HDFS
 
 pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
 pepeto.sources.Twitter.channels = MemChannel
-pepeto.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
-pepeto.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
-pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
-pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.consumerKey = xxx
+pepeto.sources.Twitter.consumerSecret = xxx
+pepeto.sources.Twitter.accessToken = xxx
+pepeto.sources.Twitter.accessTokenSecret = xxx
 pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
 
 pepeto.sources.Twitter.interceptors = myinter
@@ -254,10 +254,10 @@ pepeto.sinks = HDFS logsink
 ################    Twitter Source Configuration    ###############
 
 pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
-pepeto.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
-pepeto.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
-pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
-pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.consumerKey = xxx
+pepeto.sources.Twitter.consumerSecret = xxx
+pepeto.sources.Twitter.accessToken = xxx
+pepeto.sources.Twitter.accessTokenSecret = xxx
 pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
 
 ################    Twitter Selector Configuration     ############3
