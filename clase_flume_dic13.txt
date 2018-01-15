@@ -5,11 +5,11 @@
 
 #claves de twitter
 
-Consumer Key (API Key) fy9hEFZmjEsCCfN2GjkyfhIg9
-Consumer Secret (API Secret) 5PSWqM8Jzby6EPqS7CpI8PoCrqvaRZR6b1XepoScKATqVGLEsd 
+Consumer Key (API Key) xxx
+Consumer Secret (API Secret) xxx
 
-Access Token 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
-Access Token Secret I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0 
+Access Token xxx
+Access Token Secret xxx 
 
 
 
@@ -20,10 +20,10 @@ pepeto.sinks = hdfs_sink
  
 pepeto.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
 pepeto.sources.Twitter.channels = MemChannel
-pepeto.sources.Twitter.consumerKey = fy9hEFZmjEsCCfN2GjkyfhIg9
-pepeto.sources.Twitter.consumerSecret = 5PSWqM8Jzby6EPqS7CpI8PoCrqvaRZR6b1XepoScKATqVGLEsd
-pepeto.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
-pepeto.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+pepeto.sources.Twitter.consumerKey = xxx
+pepeto.sources.Twitter.consumerSecret = xxx
+pepeto.sources.Twitter.accessToken = xxx
+pepeto.sources.Twitter.accessTokenSecret = xxx
 pepeto.sources.Twitter.keywords = cryptocurrency, blockchain
  
 pepeto.sinks.hdfs_sink.channel = MemChannel
@@ -50,10 +50,10 @@ TwitterAgent.sinks = HDFS
 
 TwitterAgent.sources.Twitter.type = com.cloudera.flume.source.TwitterSource
 TwitterAgent.sources.Twitter.channels = MemChannel
-TwitterAgent.sources.Twitter.consumerKey = rwVFIEnZThdZBcf081xqOUAaz
-TwitterAgent.sources.Twitter.consumerSecret = DIoQLn8mddNY24o7JcLXQRuiM2nA9kiPpz6muQ9QeyfRt8mmKu
-TwitterAgent.sources.Twitter.accessToken = 380732385-S60HBA1x2MLQyIB4uyCINZwgv8rSQvmJoCVfKx1d
-TwitterAgent.sources.Twitter.accessTokenSecret = I8awfWcI6Ln3sUb4VTFFlnClSCZEnQAVWPa61Z2KYXvB0
+TwitterAgent.sources.Twitter.consumerKey = xxx
+TwitterAgent.sources.Twitter.consumerSecret = xxx
+TwitterAgent.sources.Twitter.accessToken = xxx
+TwitterAgent.sources.Twitter.accessTokenSecret = xxx
 TwitterAgent.sources.Twitter.keywords = cryptocurrency, blockchain
 
 TwitterAgent.sinks.HDFS.channel = MemChannel
