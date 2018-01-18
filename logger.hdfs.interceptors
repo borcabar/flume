@@ -1,0 +1,93 @@
+
+
+
+# para escuchar se escribe en otra terminal
+telnet 127.0.0.1 44447
+# o lo que es igual
+telnet localhost 44447
+
+# Para invocar la funcion desde la linea de comando
+flume-ng agent -c . -f bcabrera.conf -n agent1
+
+############################################################
+#########          Agente flume completo          ##########
+############################################################
+
+# el agente se debe llamar bcabrera.conf (idea de Patri ;)
+# al ser dos sinks de tipo diferente, se ponen el uno junto al otro
+
+
+#-----------------------------------------------------------  
+# Name the components on this agent, 1 source, 2 channels and 2 sinks
+#-----------------------------------------------------------
+agent1.sources = netcatsource
+agent1.sinks = logsink hdfs_sink
+agent1.channels = memchannel_log memchannel_hdfs
+
+
+#-----------------------------------------------------------
+# Configuring the sources as netcat
+#----------------------------------------------------------- 
+agent1.sources.netcatsource.type = netcat
+agent1.sources.netcatsource.bind = localhost
+agent1.sources.netcatsource.port = 44447
+
+
+#-----------------------------------------------------------   
+# Configuring the interceptor as "inter" to only allow "big data" 
+#----------------------------------------------------------- 
+agent1.sources.netcatsource.interceptors = inter
+agent1.sources.netcatsource.interceptors.inter.type = regex_filter
+agent1.sources.netcatsource.interceptors.inter.regex = big data
+
+
+#-----------------------------------------------------------   
+# Constructing the sink of the logger... easy
+#----------------------------------------------------------- 
+agent1.sinks.logsink.type = logger
+
+
+#-----------------------------------------------------------   
+# Constructing the sink for hdfs... allowing to read the resulting 
+# files as text, rolling after 10, and storing where the practice asks to
+#----------------------------------------------------------- 
+agent1.sinks.hdfs_sink.type = hdfs
+agent1.sinks.hdfs_sink.hdfs.writeFormat = Text
+agent1.sinks.hdfs_sink.hdfs.rollCount = 10
+agent1.sinks.hdfs_sink.hdfs.path = hdfs://nameservice1/user/bcabrera/flume/ejercicio_entregable/
+agent1.sinks.hdfs_sink.hdfs.fileType = DataStream
+
+
+#-----------------------------------------------------------   
+# Bulding the channel for the logger sink
+#----------------------------------------------------------- 
+agent1.channels.memchannel_log.type = memory
+agent1.channels.memchannel_log.capacity = 100
+agent1.channels.memchannel_log.transactionCapacity = 10
+
+#-----------------------------------------------------------   
+# Bulding the channel for the hdfs sink
+#----------------------------------------------------------- 
+agent1.channels.memchannel_hdfs.type = memory
+agent1.channels.memchannel_hdfs.capacity = 100
+agent1.channels.memchannel_hdfs.transactionCapacity = 10
+
+#-----------------------------------------------------------   
+# Binding channels to sinks and to the source
+#----------------------------------------------------------- 
+agent1.sources.netcatsource.channels = memchannel_log memchannel_hdfs
+agent1.sinks.logsink.channel = memchannel_log
+agent1.sinks.hdfs_sink.channel = memchannel_hdfs
+
+
+1 big data
+2 XXX
+3
+4
+5
+6
+7
+8
+9
+10
+11
